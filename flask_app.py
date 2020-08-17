@@ -27,8 +27,8 @@ def home():
 
     return render_template("index.html", show_results=False)
 
-@app.route('/search_track', methods=['POST'])
-def search_track():
+@app.route('/create_curated_playlist', methods=['POST'])
+def create_curated_playlist():
 
     if 'label' in request.form:
 
@@ -131,7 +131,9 @@ def get_training_data(search_term):
 
 
 if __name__ == "__main__":
-    app.run()
-    #app.run(debug=True, use_debugger=True)
+    if environ.get('IS_HEROKU'):
+        app.run()
+    else:
+        app.run(debug=True, use_debugger=True)
 
 
