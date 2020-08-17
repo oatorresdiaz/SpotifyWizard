@@ -1,11 +1,47 @@
+import json
 import requests
 from math import ceil
 import numpy
+from secret.keys import CLIENT_ID_PUBLIC, CLIENT_ID_SECRET
+
 
 class SpotifyAPI:
 
     base_url = 'https://api.spotify.com/v1'
     token = ''
+    REDIRECT_URI = 'http://127.0.0.1:5000/home'
+
+    def authenticate(self):
+
+        url = 'https://accounts.spotify.com/authorize?'
+
+        url += 'client_id=' + CLIENT_ID_PUBLIC
+
+        url += '&response_type=code&'
+
+        url += 'redirect_uri=' + self.REDIRECT_URI
+
+        url += '&scope=user-read-private, user-library-read'
+
+        return url
+
+    def request_access_and_refresh_tokens(self, code):
+
+        url = 'https://accounts.spotify.com/api/token'
+
+        data = {'grant_type': 'authorization_code', 'code': code, 'redirect_uri': self.REDIRECT_URI,
+                  'client_id': CLIENT_ID_PUBLIC, 'client_secret': CLIENT_ID_SECRET}
+
+        request = requests.post(url, data=data)
+
+        request_json = json.loads(request.text)
+
+        acccess_token = request_json['access_token']
+
+        refresh_token = request_json['refresh_token']
+
+        return acccess_token, refresh_token
+
 
     def search_playlist(self, query):
 
@@ -52,23 +88,29 @@ class SpotifyAPI:
 
         ids = numpy.array(ids)
 
-        chunks = numpy.array_split(ids, ceil(ids.size/50))
+        chunk_size = ceil(ids.size/50)
 
-        audio_features = []
+        if chunk_size > 0:
 
-        for chunk in chunks:
+            chunks = numpy.array_split(ids, ceil(ids.size/50))
 
-            ids = ','.join(map(str, chunk))
+            audio_features = []
 
-            params = {'ids': ids}
+            for chunk in chunks:
 
-            request = requests.get(url, headers=header, params=params).json()
+                ids = ','.join(map(str, chunk))
 
-            if 'audio_features' in request:
-                for features in request['audio_features']:
-                    audio_features.append(features)
+                params = {'ids': ids}
 
-        return audio_features
+                request = requests.get(url, headers=header, params=params).json()
+
+                if 'audio_features' in request:
+                    for features in request['audio_features']:
+                        audio_features.append(features)
+
+            return audio_features
+
+        return []
 
     def get_user_profile(self):
 

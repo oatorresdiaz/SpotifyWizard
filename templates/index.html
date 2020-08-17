@@ -11,11 +11,9 @@
 
     <div class="main-form">
 
-        <form action="/search_track" method="post">
+        <h1>Spotify Wizard</h1>
 
-            {% if not user_authorized %}
-            <input type="text" id="token" name="token" placeholder="OAuth Token">
-            {% endif %}
+        <form action="/search_track" method="post">
 
             <input type="text" id="label" name="label" placeholder="Search Term">
 
@@ -25,7 +23,7 @@
 
     </div>
 
-    {% if user_authorized %}
+    {% if show_results %}
 
     <div class="main-table">
 

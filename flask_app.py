@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, redirect
 from SpotifyAPI import SpotifyAPI
 from ML import ML
 
@@ -9,14 +9,23 @@ spotify_api = SpotifyAPI()
 @app.route('/')
 def route():
 
-    return render_template("index.html", user_authorized=False)
+    auth_url = spotify_api.authenticate()
+
+    return redirect(auth_url)
+
+@app.route('/home')
+def home():
+
+    if 'code' in request.args:
+
+        access_token, refresh_token = spotify_api.request_access_and_refresh_tokens(request.args['code'])
+
+        spotify_api.set_token(access_token)
+
+    return render_template("index.html", show_results=False)
 
 @app.route('/search_track', methods=['POST'])
 def search_track():
-
-    if 'token' in request.form:
-
-        spotify_api.set_token(request.form['token'])
 
     if 'label' in request.form:
 
@@ -72,7 +81,7 @@ def search_track():
 
                 tracks_for_playlist_names.append(curr_track['name'])
 
-        return render_template("index.html", user_authorized=True, search_term=search_term,
+        return render_template("index.html", show_results=True, search_term=search_term,
                                saved_track_names=saved_track_names,
                                tracks_for_playlist_names=tracks_for_playlist_names,
                                max_len=len(saved_track_names), min_len=len(tracks_for_playlist_names))
