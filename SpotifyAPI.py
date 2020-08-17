@@ -61,9 +61,9 @@ class SpotifyAPI:
 
         return None
 
-    def get_tracks_from_playlist(self, track_id):
+    def get_tracks_from_playlist(self, playlist_id):
 
-        url = self.base_url + '/playlists/' + track_id + '/tracks'
+        url = self.base_url + '/playlists/' + playlist_id + '/tracks'
 
         header = {'Authorization': 'Bearer ' + self.token}
 
