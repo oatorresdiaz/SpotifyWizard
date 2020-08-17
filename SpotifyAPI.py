@@ -9,7 +9,8 @@ class SpotifyAPI:
 
     base_url = 'https://api.spotify.com/v1'
     token = ''
-    REDIRECT_URI = 'http://127.0.0.1:5000/home'
+    #REDIRECT_URI = 'http://127.0.0.1:5000/home'
+    REDIRECT_URI = 'spotify-wizard.herokuapp.com/home'
 
     def authenticate(self):
 
