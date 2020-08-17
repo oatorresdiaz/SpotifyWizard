@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SpotifyWizard</title>
+    <link rel="stylesheet" href="../static/styles/style.css">
+</head>
+<body>
+
+<div class="main-container">
+
+    <div class="main-form">
+
+        <form action="/search_track" method="post">
+
+            {% if not user_authorized %}
+            <input type="text" id="token" name="token" placeholder="OAuth Token">
+            {% endif %}
+
+            <input type="text" id="label" name="label" placeholder="Search Term">
+
+            <input type="submit" value="Submit">
+
+        </form>
+
+    </div>
+
+    {% if user_authorized %}
+
+    <div class="main-table">
+
+        <table>
+
+            <tr>
+
+                <th> My Liked Songs </th>
+
+                <th> My New Curated "{{search_term}}" Playlist </th>
+
+            </tr>
+
+            {% for i in range(0, max_len) %}
+
+            <tr>
+
+                {% if i < max_len %}
+                <td> {{saved_track_names[i]}} </td>
+                {% endif %}
+
+                {% if i < min_len %}
+                <td> {{tracks_for_playlist_names[i]}} </td>
+                {% endif %}
+
+            </tr>
+
+            {% endfor %}
+
+        </table>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+</body>
+</html>
