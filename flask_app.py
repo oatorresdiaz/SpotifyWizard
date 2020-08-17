@@ -1,3 +1,4 @@
+from os import environ
 from flask import Flask, request, render_template, redirect
 from SpotifyAPI import SpotifyAPI
 from ML import ML
@@ -130,7 +131,9 @@ def get_training_data(search_term):
 
 
 if __name__ == "__main__":
-    app.run()
-    #app.run(debug=True, use_debugger=True)
+    if environ.get('IS_HEROKU'):
+        app.run()
+    else:
+        app.run(debug=True, use_debugger=True)
 
 

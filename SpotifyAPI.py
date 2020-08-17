@@ -9,7 +9,7 @@ class SpotifyAPI:
 
     base_url = 'https://api.spotify.com/v1'
     token = ''
-    # REDIRECT_URI = 'http://127.0.0.1:5000/home'
+    #REDIRECT_URI = 'http://127.0.0.1:5000/home'
     REDIRECT_URI = 'https://spotify-wizard.herokuapp.com/home'
 
     def authenticate(self):
@@ -79,7 +79,7 @@ class SpotifyAPI:
 
             for item in request['items']:
 
-                if 'track' in item:
+                if 'track' in item and item['track'] is not None:
 
                     tracks.append(item['track'])
 
