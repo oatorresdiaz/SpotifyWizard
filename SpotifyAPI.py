@@ -1,3 +1,4 @@
+from os import environ
 import json
 import requests
 from math import ceil
@@ -9,8 +10,13 @@ class SpotifyAPI:
 
     base_url = 'https://api.spotify.com/v1'
     token = ''
-    #REDIRECT_URI = 'http://127.0.0.1:5000/home'
-    REDIRECT_URI = 'https://spotify-wizard.herokuapp.com/home'
+
+    def __init__(self):
+        if environ.get('IS_HEROKU'):
+            self.REDIRECT_URI = 'https://spotify-wizard.herokuapp.com/home'
+        else:
+            self.REDIRECT_URI = 'http://127.0.0.1:5000/home'
+
 
     def authenticate(self):
 
@@ -152,9 +158,6 @@ class SpotifyAPI:
                 break
 
         return tracks
-
-    def get_token(self):
-        return self.token
 
     def set_token(self, token):
         self.token = token
