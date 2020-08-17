@@ -131,9 +131,7 @@ def get_training_data(search_term):
 
 
 if __name__ == "__main__":
-    if environ.get('IS_HEROKU'):
-        app.run()
-    else:
-        app.run(debug=True, use_debugger=True)
+    app.run()
+    #app.run(debug=True, use_debugger=True)
 
 
