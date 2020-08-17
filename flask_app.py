@@ -119,6 +119,7 @@ def get_training_data(search_term):
 
 
 if __name__ == "__main__":
-    app.run(debug=True, use_debugger=True)
+    app.run()
+    #app.run(debug=True, use_debugger=True)
 
 
