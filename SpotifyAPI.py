@@ -9,7 +9,7 @@ class SpotifyAPI:
 
     base_url = 'https://api.spotify.com/v1'
     token = ''
-    #REDIRECT_URI = 'http://127.0.0.1:5000/home'
+    # REDIRECT_URI = 'http://127.0.0.1:5000/home'
     REDIRECT_URI = 'https://spotify-wizard.herokuapp.com/home'
 
     def authenticate(self):
@@ -37,11 +37,15 @@ class SpotifyAPI:
 
         request_json = json.loads(request.text)
 
-        acccess_token = request_json['access_token']
+        if 'access_token' in request_json and 'refresh_token' in request_json:
 
-        refresh_token = request_json['refresh_token']
+            acccess_token = request_json['access_token']
 
-        return acccess_token, refresh_token
+            refresh_token = request_json['refresh_token']
+
+            return acccess_token, refresh_token
+
+        return None, None
 
 
     def search_playlist(self, query):

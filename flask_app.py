@@ -20,7 +20,9 @@ def home():
 
         access_token, refresh_token = spotify_api.request_access_and_refresh_tokens(request.args['code'])
 
-        spotify_api.set_token(access_token)
+        if access_token is not None:
+
+            spotify_api.set_token(access_token)
 
     return render_template("index.html", show_results=False)
 
