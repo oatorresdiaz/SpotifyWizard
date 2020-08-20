@@ -41,7 +41,7 @@ $(document).ready(function(){
 
                 if (data != null) {
 
-                    classifyMusic(data, 5, returnResultsToSpotifyWizard);
+                    classifyMusic(data, 2, returnResultsToSpotifyWizard);
 
                 }
                 else {
