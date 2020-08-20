@@ -91,6 +91,31 @@ class SpotifyAPI:
 
         return tracks
 
+    def get_tracks_by_ids(self, ids):
+
+        url = self.base_url + '/tracks'
+
+        header = {'Authorization': 'Bearer ' + self.token}
+
+        num_of_parts = ceil(len(ids)/50)
+
+        chunks = numpy.array_split(ids, num_of_parts)
+
+        request = {}
+
+        for ids in chunks:
+
+            ids = ','.join(map(str, ids))
+
+            params = {'ids': ids}
+
+            request = requests.get(url, headers=header, params=params).json()
+
+        if 'tracks' in request:
+            return request['tracks']
+
+        return None
+
     def get_audio_features(self, ids):
 
         url = self.base_url + '/audio-features'
@@ -143,19 +168,26 @@ class SpotifyAPI:
 
         tracks = []
 
-        while True:
+        request = requests.get(url, headers=header, params=params).json()
 
-            request = requests.get(url, headers=header, params=params).json()
+        if 'items' in request:
+            for track in request['items']:
+                if 'track' in track:
+                    tracks.append(track['track'])
 
-            if 'items' in request:
-                for track in request['items']:
-                    if 'track' in track:
-                        tracks.append(track['track'])
-
-            if 'next' in request and request['next'] is not None:
-                url = request['next']
-            else:
-                break
+        # while True:
+        #
+        #     request = requests.get(url, headers=header, params=params).json()
+        #
+        #     if 'items' in request:
+        #         for track in request['items']:
+        #             if 'track' in track:
+        #                 tracks.append(track['track'])
+        #
+        #     if 'next' in request and request['next'] is not None:
+        #         url = request['next']
+        #     else:
+        #         break
 
         return tracks
 

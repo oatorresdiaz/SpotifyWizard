@@ -6,8 +6,11 @@
     <link rel="stylesheet" href="../static/styles/style.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Princess+Sofia">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lobster+Two">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
 <body>
+
+<script src="../static/js/script.js"></script>
 
 <div class="main-container">
 
@@ -15,7 +18,7 @@
 
         <h1>Spotify Wizard</h1>
 
-        <form action="/create_curated_playlist" method="post">
+        <form id="form" action="/create_curated_playlist" method="post">
 
             <input type="text" id="label" name="label" placeholder="Search Term">
 
@@ -23,43 +26,27 @@
 
         </form>
 
-    </div>
+        {% if not show_results %}
 
-    {% if show_results %}
+        <p id="classification_status" ></p>
+
+        {% endif %}
+
+    </div>
 
     <div class="main-table">
 
-        <table>
+        <table id="curated-playlist-table">
 
             <tr>
 
-                <th> My Liked Songs </th>
-
-                <th> My New Curated "{{search_term}}" Playlist </th>
+                <th> My New Curated Playlist </th>
 
             </tr>
-
-            {% for i in range(0, max_len) %}
-
-            <tr>
-
-                {% if i < max_len %}
-                <td> {{saved_track_names[i]}} </td>
-                {% endif %}
-
-                {% if i < min_len %}
-                <td> {{tracks_for_playlist_names[i]}} </td>
-                {% endif %}
-
-            </tr>
-
-            {% endfor %}
 
         </table>
 
     </div>
-
-    {% endif %}
 
 </div>
 

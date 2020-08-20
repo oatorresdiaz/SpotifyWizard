@@ -23,12 +23,20 @@
 
 }
 
+.main-container #classification_status {
+
+    text-align: center;
+
+}
+
 
 .main-table {
 
     height: auto;
 
     overflow: auto;
+
+    margin-top: 25px;
 
 }
 
@@ -53,4 +61,13 @@ input[type=button], input[type=submit], input[type=reset] {
   margin: 4px 2px;
 
   cursor: pointer;
+
 }
+
+#curated-playlist-table td {
+
+    text-align: center;
+
+}
+
+

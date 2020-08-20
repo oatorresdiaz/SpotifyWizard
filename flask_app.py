@@ -1,11 +1,17 @@
 from os import environ
+import numpy
+import json
+import requests
+from math import ceil
 from flask import Flask, request, render_template, redirect
 from SpotifyAPI import SpotifyAPI
 from ML import ML
 
 app = Flask(__name__)
+app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 spotify_api = SpotifyAPI()
+
 
 @app.route('/')
 def route():
@@ -13,6 +19,7 @@ def route():
     auth_url = spotify_api.authenticate()
 
     return redirect(auth_url)
+
 
 @app.route('/home')
 def home():
@@ -27,6 +34,7 @@ def home():
 
     return render_template("index.html", show_results=False)
 
+
 @app.route('/create_curated_playlist', methods=['POST'])
 def create_curated_playlist():
 
@@ -34,60 +42,52 @@ def create_curated_playlist():
 
         search_term = request.form['label']
 
-        features, labels = get_training_data(search_term)
+        if environ.get('IS_HEROKU'):
 
-        features_random, labels_random = get_training_data('random music')
+            url = 'https://spotify-wizard-merlin.herokuapp.com/classify-music'
 
-        features += features_random
+        else:
 
-        labels += labels_random
+            url = 'http://127.0.0.1:5001/classify-music'
 
-        ml = ML()
+        saved_tracks = spotify_api.get_user_saved_tracks()
 
-        model = ml.create_model(features, labels)
+        dict = {'search_term': search_term.replace(' ', '_')}
 
-        user_saved_tracks = spotify_api.get_user_saved_tracks()
+        track_meta = []
 
-        saved_track_names = []
+        for track in saved_tracks:
 
-        ids = []
+            if 'preview_url' in track and track['preview_url'] is not None:
 
-        for saved_track in user_saved_tracks:
+                tuple = (track['id'], track['preview_url'])
 
-            if 'name' in saved_track:
+                track_meta.append(tuple)
 
-                saved_track_names.append(saved_track['name'])
+        dict['track_meta'] = track_meta
 
-            if 'id' in saved_track:
+        return dict
 
-                ids.append(saved_track['id'])
+    elif 'curated_playlist_ids' in request.json:
 
-        audio_features = spotify_api.get_audio_features(ids)
+        search_term = request.json['search_term']
 
-        tracks_for_playlist = []
+        ids = request.json['curated_playlist_ids']
 
-        tracks_for_playlist_names = []
+        tracks = spotify_api.get_tracks_by_ids(ids)
 
-        for feature in audio_features:
+        curated_track_names = []
 
-            curr_track = user_saved_tracks.pop(0)
+        for track in tracks:
 
-            # Note: key & mode are always int
-            keys = ['danceability', 'energy', 'key', 'loudness', 'mode', 'speechiness', 'acousticness',
-                    'instrumentalness', 'liveness', 'valence', 'tempo']
+            curated_track_names.append(track['name'])
 
-            feature = [feature[key] for key in keys]
+        return {'track_names': curated_track_names}
 
-            if model.predict([feature]) == search_term:
+        # return render_template("index.html", show_results=True, search_term=search_term,
+        #                        curated_track_names=curated_track_names,
+        #                        curated_tracks_len=len(curated_track_names))
 
-                tracks_for_playlist.append(curr_track)
-
-                tracks_for_playlist_names.append(curr_track['name'])
-
-        return render_template("index.html", show_results=True, search_term=search_term,
-                               saved_track_names=saved_track_names,
-                               tracks_for_playlist_names=tracks_for_playlist_names,
-                               max_len=len(saved_track_names), min_len=len(tracks_for_playlist_names))
 
 def get_training_data(search_term):
 
