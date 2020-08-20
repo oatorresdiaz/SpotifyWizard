@@ -116,6 +116,16 @@ class SpotifyAPI:
 
     def get_tracks_by_ids(self, ids):
 
+        if ids is None or len(ids) == 0:
+
+            return []
+
+        if self.access_token is None:
+
+            access_token = self.request_refreshed_access_token(self.refresh_token)
+
+            self.set_access_token(access_token)
+
         url = self.base_url + '/tracks'
 
         header = {'Authorization': 'Bearer ' + self.access_token}
@@ -137,7 +147,7 @@ class SpotifyAPI:
         if 'tracks' in request:
             return request['tracks']
 
-        return None
+        return []
 
     def get_audio_features(self, ids):
 
