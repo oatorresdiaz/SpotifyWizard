@@ -9,14 +9,19 @@ from secret.keys import CLIENT_ID_PUBLIC, CLIENT_ID_SECRET
 class SpotifyAPI:
 
     base_url = 'https://api.spotify.com/v1'
-    token = ''
+
+    access_token = None
+
+    refresh_token = None
 
     def __init__(self):
         if environ.get('IS_HEROKU'):
-            self.REDIRECT_URI = 'https://spotify-wizard.herokuapp.com/home'
-        else:
-            self.REDIRECT_URI = 'http://127.0.0.1:5000/home'
 
+            self.REDIRECT_URI = 'https://spotify-wizard.herokuapp.com/home'
+
+        else:
+
+            self.REDIRECT_URI = 'http://127.0.0.1:5000/home'
 
     def authenticate(self):
 
@@ -53,12 +58,30 @@ class SpotifyAPI:
 
         return None, None
 
+    def request_refreshed_access_token(self, refresh_token):
+
+        url = 'https://accounts.spotify.com/api/token'
+
+        data = {'grant_type': 'refresh_token', 'refresh_token': refresh_token, 'client_id': CLIENT_ID_PUBLIC,
+                'client_secret': CLIENT_ID_SECRET}
+
+        request = requests.post(url, data=data)
+
+        request_json = json.loads(request.text)
+
+        if 'access_token' in request_json:
+
+            acccess_token = request_json['access_token']
+
+            return acccess_token
+
+        return None
 
     def search_playlist(self, query):
 
         url = self.base_url + '/search'
 
-        header = {'Authorization': 'Bearer ' + self.token}
+        header = {'Authorization': 'Bearer ' + self.access_token}
 
         query = query.replace(' ', '+')
 
@@ -75,7 +98,7 @@ class SpotifyAPI:
 
         url = self.base_url + '/playlists/' + playlist_id + '/tracks'
 
-        header = {'Authorization': 'Bearer ' + self.token}
+        header = {'Authorization': 'Bearer ' + self.access_token}
 
         request = requests.get(url, headers=header).json()
 
@@ -95,7 +118,7 @@ class SpotifyAPI:
 
         url = self.base_url + '/tracks'
 
-        header = {'Authorization': 'Bearer ' + self.token}
+        header = {'Authorization': 'Bearer ' + self.access_token}
 
         num_of_parts = ceil(len(ids)/50)
 
@@ -120,7 +143,7 @@ class SpotifyAPI:
 
         url = self.base_url + '/audio-features'
 
-        header = {'Authorization': 'Bearer ' + self.token}
+        header = {'Authorization': 'Bearer ' + self.access_token}
 
         ids = numpy.array(ids)
 
@@ -152,7 +175,7 @@ class SpotifyAPI:
 
         url = self.base_url + '/me'
 
-        header = {'Authorization': 'Bearer ' + self.token}
+        header = {'Authorization': 'Bearer ' + self.access_token}
 
         request = requests.get(url, headers=header).json()
 
@@ -162,7 +185,7 @@ class SpotifyAPI:
 
         url = self.base_url + '/me/tracks'
 
-        header = {'Authorization': 'Bearer ' + self.token}
+        header = {'Authorization': 'Bearer ' + self.access_token}
 
         params = {'limit': '50'}
 
@@ -191,5 +214,18 @@ class SpotifyAPI:
 
         return tracks
 
-    def set_token(self, token):
-        self.token = token
+    def get_access_token(self):
+
+        return self.access_token
+
+    def get_refresh_token(self):
+
+        return self.refresh_token
+
+    def set_access_token(self, token):
+
+        self.access_token = token
+
+    def set_refresh_token(self, token):
+
+        self.refresh_token = token

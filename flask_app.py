@@ -1,11 +1,6 @@
 from os import environ
-import numpy
-import json
-import requests
-from math import ceil
 from flask import Flask, request, render_template, redirect
 from SpotifyAPI import SpotifyAPI
-from ML import ML
 
 app = Flask(__name__)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
@@ -24,13 +19,25 @@ def route():
 @app.route('/home')
 def home():
 
-    if 'code' in request.args:
+    if spotify_api.get_access_token():  # If there's already a token, get a new one. They expire quickly.
+
+        new_access_token = spotify_api.request_refreshed_access_token(spotify_api.get_refresh_token())
+
+        spotify_api.set_access_token(new_access_token)
+
+    elif 'code' in request.args:  # First time user authorization
 
         access_token, refresh_token = spotify_api.request_access_and_refresh_tokens(request.args['code'])
 
         if access_token is not None:
 
-            spotify_api.set_token(access_token)
+            spotify_api.set_access_token(access_token)
+
+            spotify_api.set_refresh_token(refresh_token)
+
+        else:
+
+            return redirect('/')
 
     return render_template("index.html", show_results=False)
 
@@ -42,17 +49,9 @@ def create_curated_playlist():
 
         search_term = request.form['label']
 
-        if environ.get('IS_HEROKU'):
-
-            url = 'https://spotify-wizard-merlin.herokuapp.com/classify-music'
-
-        else:
-
-            url = 'http://127.0.0.1:5001/classify-music'
-
         saved_tracks = spotify_api.get_user_saved_tracks()
 
-        dict = {'search_term': search_term.replace(' ', '_')}
+        response = {'search_term': search_term.replace(' ', '_')}
 
         track_meta = []
 
@@ -64,9 +63,9 @@ def create_curated_playlist():
 
                 track_meta.append(tuple)
 
-        dict['track_meta'] = track_meta
+        response['track_meta'] = track_meta
 
-        return dict
+        return response
 
     elif 'curated_playlist_ids' in request.json:
 
@@ -82,52 +81,7 @@ def create_curated_playlist():
 
             curated_track_names.append(track['name'])
 
-        return {'track_names': curated_track_names}
-
-        # return render_template("index.html", show_results=True, search_term=search_term,
-        #                        curated_track_names=curated_track_names,
-        #                        curated_tracks_len=len(curated_track_names))
-
-
-def get_training_data(search_term):
-
-    playlists = spotify_api.search_playlist(search_term)
-
-    features = []
-
-    labels = []
-
-    for playlist in playlists:
-
-        if 'id' in playlist:
-
-            tracks = spotify_api.get_tracks_from_playlist(playlist['id'])
-
-            track_ids = []
-
-            for track in tracks:
-
-                if 'id' in track:
-                    track_ids.append(track['id'])
-
-            audio_features = spotify_api.get_audio_features(track_ids)
-
-            for feature in audio_features:
-
-                if feature is None:
-                    continue
-
-                # Note: key & mode are always int
-                keys = ['danceability', 'energy', 'key', 'loudness', 'mode', 'speechiness', 'acousticness',
-                        'instrumentalness', 'liveness', 'valence', 'tempo']
-
-                values = [feature[key] for key in keys]
-
-                features.append(values)
-
-                labels.append(search_term)
-
-    return features, labels
+        return {'search_term': search_term, 'track_names': curated_track_names}
 
 
 if __name__ == "__main__":

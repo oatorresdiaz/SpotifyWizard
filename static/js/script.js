@@ -135,7 +135,13 @@ function returnResultsToSpotifyWizard(data) {
         async: true,
         success: function (response) {
 
+            var searchTerm = response["search_term"];
+
             var trackNames = response["track_names"];
+
+            $('#curated-playlist-table > tbody > *').remove();
+
+            $('#curated-playlist-table > tbody').append('<tr><th> My New Curated \'' + searchTerm + '\' Playlist </th></tr>');
 
             for (var i = 0; i < trackNames.length; i++) {
 
